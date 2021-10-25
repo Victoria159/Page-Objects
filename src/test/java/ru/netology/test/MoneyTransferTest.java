@@ -21,7 +21,6 @@ public class MoneyTransferTest {
 
     @Test
     void transferMoneyOneFromTwo() {
-        open("http://localhost:9999");
         val moneyTransferPage = dashboardPage.refillOneFromTwo();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getSecondCardNumber(),
                 dashboardPage.getSecondCardSum() / 10);
@@ -36,7 +35,6 @@ public class MoneyTransferTest {
 
     @Test
     void transferMoneyTwoFromOne() {
-        open("http://localhost:9999");
         val moneyTransferPage = dashboardPage.refillTwoFromOne();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getFirstCardNumber(),
                 dashboardPage.getFirstCardSum() / 10);
@@ -50,7 +48,6 @@ public class MoneyTransferTest {
 
     @Test
     void transferMoneyOneFromInvalidNumber() {
-        open("http://localhost:9999");
         val moneyTransferPage = dashboardPage.refillOneFromTwo();
         val moneyTransferInfo = DataHelper.getInvalidMoneyTransferInfo(dashboardPage.getSecondCardSum() / 10);
         moneyTransferPage.refillActionError(moneyTransferInfo);
@@ -59,7 +56,6 @@ public class MoneyTransferTest {
 
     @Test
     void zeroTransferMoneyTwoFromOne() {
-        open("http://localhost:9999");
         val moneyTransferPage = dashboardPage.refillTwoFromOne();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getFirstCardNumber(),
                 dashboardPage.getFirstCardSum());
@@ -72,7 +68,6 @@ public class MoneyTransferTest {
 
     @Test
     void cancelTransferMoney() {
-        open("http://localhost:9999");
         val moneyTransferPage = dashboardPage.refillOneFromTwo();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getSecondCardNumber(),
                 dashboardPage.getSecondCardSum() / 10);
@@ -85,14 +80,13 @@ public class MoneyTransferTest {
     }
 
     @Test
-    void transferMoneyExcessAmount() {
-        open("http://localhost:9999");
+    void transferMoneyExcessAmount() throws InterruptedException {
         val moneyTransferPage = dashboardPage.refillOneFromTwo();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getSecondCardNumber(),
-                dashboardPage.getSecondCardSum() + 10);
+                dashboardPage.getSecondCardSum() + 20);
         moneyTransferPage.refillAction(moneyTransferInfo);
         dashboardPage.updateAmounts();
-
+        Thread.sleep(5000);
         boolean testAmounts = dashboardPage.getSecondCardSum() >= 0
                 && dashboardPage.getSecondCardSum() <= totalAmount
                 && dashboardPage.getFirstCardSum() >= 0
