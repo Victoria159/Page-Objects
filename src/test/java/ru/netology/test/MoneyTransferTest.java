@@ -55,13 +55,13 @@ public class MoneyTransferTest {
     }
 
     @Test
-    void zeroTransferMoneyTwoFromOne() {
+    void zeroTransferMoneyTwoFromOne() throws InterruptedException {
         val moneyTransferPage = dashboardPage.refillTwoFromOne();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getFirstCardNumber(),
                 dashboardPage.getFirstCardSum());
         moneyTransferPage.refillAction(moneyTransferInfo);
         dashboardPage.updateAmounts();
-
+        Thread.sleep(5000);
         Assertions.assertEquals(totalAmount, dashboardPage.getSecondCardSum());
         Assertions.assertEquals(0, dashboardPage.getFirstCardSum());
     }
@@ -81,9 +81,10 @@ public class MoneyTransferTest {
 
     @Test
     void transferMoneyExcessAmount() throws InterruptedException {
+
         val moneyTransferPage = dashboardPage.refillOneFromTwo();
         val moneyTransferInfo = DataHelper.getMoneyTransferInfo(dashboardPage.getSecondCardNumber(),
-                dashboardPage.getSecondCardSum() + 20);
+                dashboardPage.getSecondCardSum() + 10);
         moneyTransferPage.refillAction(moneyTransferInfo);
         dashboardPage.updateAmounts();
         Thread.sleep(5000);
