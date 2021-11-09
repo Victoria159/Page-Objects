@@ -16,6 +16,10 @@ public class DataHelper {
         return new AuthInfo("vasya", "qwerty123");
     }
 
+    public static AuthInfo getOtherAuthInfo(AuthInfo original) {
+        return new AuthInfo("petya", "123qwerty");
+    }
+
     @Value
     public static class VerificationCode {
         private String code;
@@ -26,31 +30,26 @@ public class DataHelper {
     }
 
     @Value
-    public static class CardInfo {
-        private String cardNumber;
-        private long balance;
+    public static class Card1Info {
+        private String number;
     }
 
-    public static CardInfo getFirstCardInfo(AuthInfo authInfo) {
-        return new CardInfo("5559 0000 0000 0001", 10_000);
-    }
-
-    public static CardInfo getSecondCardInfo(AuthInfo authInfo) {
-        return new CardInfo("5559 0000 0000 0002", 10_000);
+    public static Card1Info getCard1Info() {
+        return new Card1Info("5559 0000 0000 0001");
     }
 
     @Value
-    public static class MoneyTransferInfo {
-        private String refillAmount;
-        private String senderCardNumber;
+    public static class Card2Info {
+        private String number;
     }
 
-    public static MoneyTransferInfo getMoneyTransferInfo(String senderCardNumber, long refillAmount) {
-        return new MoneyTransferInfo(Long.toString(refillAmount), senderCardNumber);
+    public static Card1Info getCard2Info() {
+        return new Card1Info("5559 0000 0000 0002");
     }
 
-    public static MoneyTransferInfo getInvalidMoneyTransferInfo(long refillAmount) {
-        return new MoneyTransferInfo(Long.toString(refillAmount), "6559 0000 0000 0002");
+    @Value
+    public static class AmountValue {
+        private String amountValue;
     }
 
 }

@@ -1,79 +1,130 @@
 package ru.netology.page;
 
 import com.codeborne.selenide.SelenideElement;
-import ru.netology.data.DataHelper;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
+
 
 public class DashboardPage {
     private SelenideElement heading = $("[data-test-id=dashboard]");
-    private SelenideElement firstBalanceButton = $$("[data-test-id='action-deposit']").first();
-    private SelenideElement secondBalanceButton = $$("[data-test-id='action-deposit']").last();
-    private SelenideElement reloadButton = $("[data-test-id=action-reload]");
-    private long firstCardSum;
-    private long secondCardSum;
-    private DataHelper.AuthInfo authInfo;
-    private DataHelper.CardInfo firstCardInfo;
-    private DataHelper.CardInfo secondCardInfo;
-    private final Pattern pattern = Pattern.compile(", баланс:\\s*(\\-?\\d+)\\s*");
+    private SelenideElement firstCard = $("#root div ul li:nth-child(1) div");
+    private SelenideElement secondCard = $("#root div ul li:nth-child(2) div");
 
+    private final String balanceStart = "баланс: ";
+    private final String balanceFinish = " р.";
 
-    public DashboardPage(DataHelper.AuthInfo authInfo) {
+    public DashboardPage() {
         heading.shouldBe(visible);
-        this.authInfo = authInfo;
-        firstCardInfo = DataHelper.getFirstCardInfo(authInfo);
-        secondCardInfo = DataHelper.getSecondCardInfo(authInfo);
-        updateAmounts();
     }
 
-    public void updateAmounts() {
-        String firstCardDescription = $("[data-test-id='92df3f1c-a033-48e6-8390-206f6b1f56c0']").getText();
-        Matcher m = pattern.matcher(firstCardDescription);
-        m.find();
-        String str = m.group(1);
-        firstCardSum = Long.parseLong(str);
 
-        String secondCardDescription = $("[data-test-id='0f3f5c2a-249e-4c3d-8287-09f7a039391d']").getText();
-        m = pattern.matcher(secondCardDescription);
-        m.find();
-        str = m.group(1);
-        secondCardSum = Long.parseLong(str);
+    // data - класс для хранеия и извлечения информации о начальном балансе карт
+    public class InitialCardsBalance {
+        int card1Balance;
+        int card2Balance;
+
+        public void setCard1Balance(int card1Balance) {
+            this.card1Balance = card1Balance;
+        }
+
+        public void setCard2Balance(int card2Balance) {
+            this.card2Balance = card2Balance;
+        }
+
+        public int getCard1Balance() {
+            return card1Balance;
+        }
+
+        public int getCard2Balance() {
+            return card2Balance;
+        }
 
     }
 
-    public long getFirstCardSum() {
-        return firstCardSum;
+    // метод получения начального баланса карт
+    public int getInitialBalanceOfCard(int cardIndex) {
+        var initialCardsBalance = new InitialCardsBalance();
+        var text = "";
+        int initialCardBalance = 0;
+        if (cardIndex == 1) {
+            text = firstCard.text();
+            initialCardsBalance.setCard1Balance(exctractBalance(text));
+            initialCardBalance = initialCardsBalance.getCard1Balance();
+        }
+        if (cardIndex == 2) {
+            text = secondCard.text();
+            initialCardsBalance.setCard2Balance(exctractBalance(text));
+            initialCardBalance = initialCardsBalance.getCard2Balance();
+        }
+        return initialCardBalance;
     }
 
-    public long getSecondCardSum() {
-        return secondCardSum;
+    public int exctractBalance(String text) {
+        var start = text.indexOf(balanceStart);
+        var finish = text.indexOf(balanceFinish);
+        var value = text.substring(start + balanceStart.length(), finish);
+        return Integer.parseInt(value);
     }
 
-    public String getFirstCardNumber() {
-        return firstCardInfo.getCardNumber();
+    // data - класс для хранеия и извлечения информации о конечном балансе карт
+    public class FinalCardsBalance {
+        int card1Balance;
+        int card2Balance;
+
+        public void setCard1Balance(int card1Balance) {
+            this.card1Balance = card1Balance;
+        }
+
+        public void setCard2Balance(int card2Balance) {
+            this.card2Balance = card2Balance;
+        }
+
+        public int getCard1Balance() {
+            return card1Balance;
+        }
+
+        public int getCard2Balance() {
+            return card2Balance;
+        }
+
     }
 
-    public String getSecondCardNumber() {
-        return secondCardInfo.getCardNumber();
+    // метод для вычисления окончательного баланса карт
+    public FinalCardsBalance finalBalance(String from1To2OrFrom2to1, int initialBalanceCard1, int initialBalanceCard2, int transferAmount) {
+        var сardsBalance = new FinalCardsBalance();
+        if (from1To2OrFrom2to1 == "from1To2") {
+            int finalBalanceOfTheFirstCard = initialBalanceCard1 - transferAmount;
+            int finalBalanceOfTheSecondCard = initialBalanceCard2 + transferAmount;
+            сardsBalance.setCard1Balance(finalBalanceOfTheFirstCard);
+            сardsBalance.setCard2Balance(finalBalanceOfTheSecondCard);
+        }
+        if (from1To2OrFrom2to1 == "from2To1") {
+            int finalBalanceOfTheFirstCard = initialBalanceCard1 + transferAmount;
+            int finalBalanceOfTheSecondCard = initialBalanceCard2 - transferAmount;
+            сardsBalance.setCard1Balance(finalBalanceOfTheFirstCard);
+            сardsBalance.setCard2Balance(finalBalanceOfTheSecondCard);
+        }
+        return сardsBalance;
     }
 
-    public void isVisible() {
-        firstBalanceButton.shouldBe(visible);
-        secondBalanceButton.shouldBe(visible);
+    // метод проверки окончательного баланса
+    public int checkFinalBalance(String from1To2OrFrom2to1, int initialBalanceCard1, int initialBalanceCard2, int transferAmount) {
+        int finalBalanceOfCard1 = finalBalance(from1To2OrFrom2to1, initialBalanceCard1, initialBalanceCard2, transferAmount).getCard1Balance();
+        int finalBalanceOfCard2 = finalBalance(from1To2OrFrom2to1, initialBalanceCard1, initialBalanceCard2, transferAmount).getCard2Balance();
+        // проверка осуществления перевода
+        firstCard.shouldHave(text(String.valueOf(finalBalanceOfCard1)));
+        secondCard.shouldHave(text(String.valueOf(finalBalanceOfCard2)));
+        // возвращение баланса в тест для последующего ассерта (в тесте)
+        int cardBalance = 0;
+        if (from1To2OrFrom2to1 == "from1To2") {
+            cardBalance = finalBalanceOfCard1;
+        }
+        if (from1To2OrFrom2to1 == "from2To1") {
+            cardBalance = finalBalanceOfCard2;
+        }
+        return cardBalance;
     }
 
-    public MoneyTransferPage refillOneFromTwo() {
-        firstBalanceButton.click();
-        return new MoneyTransferPage(firstCardInfo.getCardNumber(), firstCardSum, secondCardSum);
-    }
-
-    public MoneyTransferPage refillTwoFromOne() {
-        secondBalanceButton.click();
-        return new MoneyTransferPage(secondCardInfo.getCardNumber(), secondCardSum, firstCardSum);
-    }
 }
