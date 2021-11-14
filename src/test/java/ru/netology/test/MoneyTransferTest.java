@@ -3,9 +3,10 @@ package ru.netology.test;
 import org.junit.jupiter.api.Test;
 import ru.netology.data.DataHelper;
 import ru.netology.page.LoginPage;
+import ru.netology.page.MoneyTransferPage;
 
 import static com.codeborne.selenide.Selenide.open;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static ru.netology.data.DataHelper.getFirstCardInfo;
 import static ru.netology.data.DataHelper.getSecondCardInfo;
 
@@ -20,7 +21,7 @@ public class MoneyTransferTest {
         var dashboardPage = verificationPage.validVerify(verificationCode);
         var firstCardInfo = getFirstCardInfo();
         var secondCardInfo = getSecondCardInfo();
-        int amount = 10_000;
+        int amount = 1_000;
         var expectedBalanceFirstCard = dashboardPage.getCardBalance(firstCardInfo) - amount;
         var expectedBalanceSecondCard = dashboardPage.getCardBalance(secondCardInfo) + amount;
         var transferPage = dashboardPage.selectCardToTransfer(secondCardInfo);
@@ -39,7 +40,7 @@ public class MoneyTransferTest {
         var dashboardPage = verificationPage.validVerify(verificationCode);
         var firstCardInfo = getFirstCardInfo();
         var secondCardInfo = getSecondCardInfo();
-        int amount = 10_000;
+        int amount = 1_000;
         var expectedBalanceSecondCard = dashboardPage.getCardBalance(secondCardInfo) - amount;
         var expectedBalanceFirstCard = dashboardPage.getCardBalance(firstCardInfo) + amount;
         var transferPage = dashboardPage.selectCardToTransfer(firstCardInfo);
@@ -49,6 +50,7 @@ public class MoneyTransferTest {
         assertEquals(expectedBalanceSecondCard, actualBalanceSecondCard);
         assertEquals(expectedBalanceFirstCard, actualBalanceFirstCard);
     }
+
     @Test
     void shouldTransferMoneyExcessAmount() {
         var loginPage = open("http://localhost:9999", LoginPage.class);
@@ -58,14 +60,12 @@ public class MoneyTransferTest {
         var dashboardPage = verificationPage.validVerify(verificationCode);
         var firstCardInfo = getFirstCardInfo();
         var secondCardInfo = getSecondCardInfo();
-        int amount = 1_000;
-        var expectedBalanceFirstCard = dashboardPage.getCardBalance(firstCardInfo) - amount;
-        var expectedBalanceSecondCard = dashboardPage.getCardBalance(secondCardInfo) + amount;
+        int amountSum = dashboardPage.getCardBalance(firstCardInfo) + 1_000;
         var transferPage = dashboardPage.selectCardToTransfer(secondCardInfo);
-        dashboardPage = transferPage.makeTransfer(String.valueOf(amount), firstCardInfo);
+        dashboardPage = transferPage.makeTransfer(String.valueOf(amountSum), firstCardInfo);
         var actualBalanceFirstCard = dashboardPage.getCardBalance(firstCardInfo);
         var actualBalanceSecondCard = dashboardPage.getCardBalance(secondCardInfo);
-        assertEquals(expectedBalanceFirstCard, actualBalanceFirstCard);
-        assertEquals(expectedBalanceSecondCard, actualBalanceSecondCard);
+        assertEquals(firstCardInfo, actualBalanceFirstCard);
+        assertEquals(secondCardInfo, actualBalanceSecondCard);
     }
 }
